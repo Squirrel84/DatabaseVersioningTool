@@ -1,0 +1,32 @@
+﻿<Window x:Class="DatabaseVersioningTool.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DatabaseVersioningTool.WPF"
+        mc:Ignorable="d"
+        Title="MainWindow" 
+        Height="600" 
+        Width="800" 
+        ResizeMode="NoResize" 
+        WindowStartupLocation="CenterScreen" 
+        WindowStyle="SingleBorderWindow" 
+        Background="Silver">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Margin="5" >Database:</Label>
+            <ComboBox Margin="5" Width="400" Name="cboDatabase" Text="Please Select" SelectionChanged="cboDatabase_SelectionChanged" />
+            <Button Content="Restore" Height="25" Name="btnRestore" Width="100" Click="btnRestore_Click" IsEnabled="False" />
+            <Button Content="Backup" Height="25" Name="btnBackup" Width="100" Click="btnBackup_Click" IsEnabled="False" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Margin="5" >Version:</Label>
+            <ComboBox Margin="5" Width="400" Name="cboVersion" Text="Please Select" SelectionChanged="cboVersion_SelectionChanged" />
+            <Button Content="Upgrade" Height="25" Name="btnUpgrade" Width="100" Click="btnUpgrade_Click" IsEnabled="False" />
+        </StackPanel>
+        <StackPanel Orientation="Vertical">
+            <TextBox Name="txtScript" AcceptsReturn="True" AcceptsTab="True" AutoWordSelection="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Height="400" Width="750" HorizontalAlignment="Center" VerticalAlignment="Top" />
+            <Button Margin="5" Name="btnCreateUpdate" Content="Create Update" Height="50" Width="150" Click="btnCreateUpdate_Click" />
+        </StackPanel>
+    </StackPanel>
+</Window>
