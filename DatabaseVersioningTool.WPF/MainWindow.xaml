@@ -5,28 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DatabaseVersioningTool.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" 
-        Height="600" 
-        Width="800" 
+        Title="Database Versioning Tool" 
         ResizeMode="NoResize" 
         WindowStartupLocation="CenterScreen" 
         WindowStyle="SingleBorderWindow" 
         Background="Silver">
-    <StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label Margin="5" >Database:</Label>
-            <ComboBox Margin="5" Width="400" Name="cboDatabase" Text="Please Select" SelectionChanged="cboDatabase_SelectionChanged" />
-            <Button Content="Restore" Height="25" Name="btnRestore" Width="100" Click="btnRestore_Click" IsEnabled="False" />
-            <Button Content="Backup" Height="25" Name="btnBackup" Width="100" Click="btnBackup_Click" IsEnabled="False" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label Margin="5" >Version:</Label>
-            <ComboBox Margin="5" Width="400" Name="cboVersion" Text="Please Select" SelectionChanged="cboVersion_SelectionChanged" />
-            <Button Content="Upgrade" Height="25" Name="btnUpgrade" Width="100" Click="btnUpgrade_Click" IsEnabled="False" />
-        </StackPanel>
-        <StackPanel Orientation="Vertical">
-            <TextBox Name="txtScript" AcceptsReturn="True" AcceptsTab="True" AutoWordSelection="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Height="400" Width="750" HorizontalAlignment="Center" VerticalAlignment="Top" />
-            <Button Margin="5" Name="btnCreateUpdate" Content="Create Update" Height="50" Width="150" Click="btnCreateUpdate_Click" />
-        </StackPanel>
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="25" />
+            <RowDefinition Height="25" />
+            <RowDefinition MinHeight="400" />
+            <RowDefinition Height="25" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="50" />
+            <ColumnDefinition MinWidth="600" />
+            <ColumnDefinition MinWidth="100" />
+            <ColumnDefinition MinWidth="100" />
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Database:" HorizontalAlignment="Right" />
+        <ComboBox Grid.Row="0" Grid.Column="1" Name="cboDatabase" Text="Please Select" SelectionChanged="cboDatabase_SelectionChanged" />
+        <Button Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Content="Generate Create Scripts" Name="btnCreateScripts" Click="btnCreateScripts_Click" IsEnabled="False" />
+
+        <Label Grid.Row="1" Grid.Column="1" Name="lblDbVersion"  />
+        <Button Grid.Row="1" Grid.Column="2" Content="Backup" Name="btnBackup" Click="btnBackup_Click" IsEnabled="False" />
+        <Button Grid.Row="1" Grid.Column="3" Content="Restore" Name="btnRestore" Click="btnRestore_Click" IsEnabled="False" />
+
+        <Label Grid.Row="2" Grid.Column="0" Content="Version:" HorizontalAlignment="Right"  />
+        <ComboBox Grid.Row="2" Grid.Column="1" Name="cboVersion" Text="Please Select" SelectionChanged="cboVersion_SelectionChanged" IsEnabled="False" />
+        <Button Grid.Row="2" Grid.Column="2" Name="btnUpgrade" Content="Upgrade" Click="btnUpgrade_Click" IsEnabled="False" />
+
+        <TextBox Grid.Row="3" Grid.Column="1" Name="txtScript" AcceptsReturn="True" AcceptsTab="True" AutoWordSelection="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" />
+        <Button Grid.Row="4" Grid.Column="3" Name="btnCreateUpdate" Content="Create Update" Click="btnCreateUpdate_Click" IsEnabled="False" />
+    </Grid>
 </Window>

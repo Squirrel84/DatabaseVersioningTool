@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DatabaseVersioningTool.DataAccess
+namespace DatabaseVersioningTool.DataAccess.Models.Interfaces
 {
     public interface IDatabaseVersionCollection<C> where C : IDatabaseVersion
     {

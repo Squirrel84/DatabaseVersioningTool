@@ -1,8 +1,8 @@
-﻿namespace DatabaseVersioningTool.DataAccess
+﻿namespace DatabaseVersioningTool.DataAccess.Models.Interfaces
 {
     public interface IDatabaseVersion
     {
-        string Id { get; }
+        string Name { get; }
         string From { get; }
         string To { get; }
     }

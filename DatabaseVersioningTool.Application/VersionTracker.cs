@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using System.Reflection;
+using DatabaseVersioningTool.DataAccess.Models.Interfaces;
 
 namespace DatabaseVersioningTool.DataAccess
 {
@@ -13,19 +14,6 @@ namespace DatabaseVersioningTool.DataAccess
         public List<VC> Versions { get; private set; }
 
         private List<PropertyInfo> properties { get; set; }
-
-        public static VersionTracker<VC, V> Tracker
-        {
-            get
-            {
-                if (_tracker == null)
-                {
-                    _tracker = new VersionTracker<VC, V>();
-                }
-                return _tracker;
-            }
-        }
-        private static VersionTracker<VC, V> _tracker { get; set; }
 
         public VersionTracker()
         {
@@ -77,16 +65,19 @@ namespace DatabaseVersioningTool.DataAccess
 
             using (XmlReader reader = XmlReader.Create(FileManager.Manager.VersionFilePath))
             {
-                bool readyToAdd = false;
                 VC collection = default(VC);
 
                 while (reader.Read())
                 {
-                    readyToAdd = false;
                     if (reader.IsStartElement())
                     {
                         if (reader.Depth == 1)
                         {
+                            if (collection != null && collection.Versions.Count > 0)
+                            {
+                                Versions.Add(collection);
+                            }
+
                             if (reader.NodeType == XmlNodeType.Element)
                             {
                                 collection = new VC();
@@ -141,18 +132,16 @@ namespace DatabaseVersioningTool.DataAccess
                                     {
                                         var method = collection.GetType().GetMethod("AddVersion");
                                         method.Invoke(collection, new object[1] { item });
-                                        readyToAdd = true;
                                     }
                                 }
                             }
                         }
-
-                        if (readyToAdd && collection != null)
-                        {
-                            Versions.Add(collection);
-                            collection = default(VC);
-                        }
                     }
+                }
+
+                if (collection != null && collection.Versions.Count > 0)
+                {
+                    Versions.Add(collection);
                 }
             }
         }
@@ -167,13 +156,13 @@ namespace DatabaseVersioningTool.DataAccess
             ReadFile();
         }
 
-        internal VC GetDatabaseVersion(string dbName)
+        internal VC GetDatabaseVersions(string dbName)
         {
             if(!Versions.Any(x => x.Name == dbName))
             {
                 Versions.Add(new VC() { Name = dbName });
             }
-            return Versions.Single(x => x.Name == dbName);
+            return Versions.FirstOrDefault(x => x.Name == dbName);
         }
     }
 }

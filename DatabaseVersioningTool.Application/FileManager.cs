@@ -6,22 +6,21 @@ namespace DatabaseVersioningTool.DataAccess
 {
     public class FileManager
     {
+        private const string ScriptFolderName = "VersionScripts";
+        private const string VersionFileName = "Versions.config";
+        private string currentDirectory = null;
+        private string versionFolderPath = null;
+
         public string VersionFilePath { get; private set; }
 
-        public string GetUpgradeFileName(string dbName, string version)
+        private string GetUpgradeFolderName(string dbName)
         {
-            return String.Format("{0}_{1}", dbName, version);
+            return System.IO.Path.Combine(versionFolderPath, $"{dbName}");
         }
 
-        private string GetUpgradeFolderName(string upgradeName)
+        private string GetUpgradePathAndFileName(string dbName, string versionName)
         {
-            string current = Directory.GetCurrentDirectory();
-            return System.IO.Path.Combine(current, String.Format("{0}_Update", upgradeName));
-        }
-
-        private string GetUpgradePathAndFileName(string upgradePath, string upgradeName)
-        {
-            return System.IO.Path.Combine(upgradePath, string.Format("{0}.damm", upgradeName));
+            return System.IO.Path.Combine(GetUpgradeFolderName(dbName), $"{versionName}.sql");
         }
 
         public static FileManager Manager
@@ -39,18 +38,24 @@ namespace DatabaseVersioningTool.DataAccess
 
         public void Initialise()
         {
-            string current = Directory.GetCurrentDirectory();
-            string folderName = "DATA";
-            string versionConfigPath = System.IO.Path.Combine(current, folderName);
-            if (!System.IO.Directory.Exists(versionConfigPath))
+            currentDirectory = Directory.GetCurrentDirectory();
+            
+            versionFolderPath = System.IO.Path.Combine(currentDirectory, ScriptFolderName);
+
+            if (!System.IO.Directory.Exists(versionFolderPath))
             {
-                System.IO.Directory.CreateDirectory(versionConfigPath);
+                System.IO.Directory.CreateDirectory(versionFolderPath);
             }
 
-            versionConfigPath = System.IO.Path.Combine(versionConfigPath, "Versions.config");
-            if (!System.IO.File.Exists(versionConfigPath))
+            EnsureVersionFileExists(versionFolderPath);
+        }
+
+        private void EnsureVersionFileExists(string folderPath)
+        {
+            VersionFilePath = System.IO.Path.Combine(folderPath, VersionFileName);
+            if (!System.IO.File.Exists(VersionFilePath))
             {
-                using (var fs = System.IO.File.Create(versionConfigPath))
+                using (var fs = System.IO.File.Create(VersionFilePath))
                 {
                     using (TextWriter tw = new StreamWriter(fs, Encoding.UTF8))
                     {
@@ -58,39 +63,32 @@ namespace DatabaseVersioningTool.DataAccess
                     }
                 }
             }
-
-            VersionFilePath = versionConfigPath;
         }
 
-        internal string GeneratePhysicalUpdate(string dbName, string version, string sql)
+        internal string GeneratePhysicalUpdate(string dbName, string versionName, string sql)
         {
-            string upgradeName = GetUpgradeFileName(dbName, version);
-            string upgradePath = GetUpgradeFolderName(upgradeName);
-
+            string upgradePath = GetUpgradeFolderName(dbName);
             System.IO.Directory.CreateDirectory(upgradePath);
 
-            string upgradeFullPath = GetUpgradePathAndFileName(upgradePath, upgradeName);
+            string upgradeFullPath = GetUpgradePathAndFileName(dbName, versionName);
 
             if (!System.IO.File.Exists(upgradeFullPath))
             {
                 using (System.IO.FileStream fs = System.IO.File.Create(upgradeFullPath))
                 {
-                    System.IO.StreamWriter file = new StreamWriter(fs);
-                    file.Write(sql);
-                    file.Close();
+                    using (System.IO.StreamWriter file = new StreamWriter(fs))
+                    {
+                        file.Write(sql);
+                    }
                 }
-
             }
 
             return upgradeFullPath;
         }
 
-        internal string GetSqlScript(string dbName, string version)
+        internal string GetSqlScript(string dbName, string versionName)
         {
-            string upgradeName = GetUpgradeFileName(dbName, version);
-            string upgradePath = GetUpgradeFolderName(upgradeName);
-
-            string upgradeFullPath = GetUpgradePathAndFileName(upgradePath, upgradeName);
+            string upgradeFullPath = GetUpgradePathAndFileName(dbName, versionName);
 
             string sql = string.Empty;
 
@@ -98,8 +96,10 @@ namespace DatabaseVersioningTool.DataAccess
             {
                 using (System.IO.FileStream fs = System.IO.File.OpenRead(upgradeFullPath))
                 {
-                    System.IO.StreamReader file = new StreamReader(fs);
-                    sql = file.ReadToEnd();
+                    using (System.IO.StreamReader file = new StreamReader(fs))
+                    {
+                        sql = file.ReadToEnd();
+                    }
                 }
             }
             return sql;

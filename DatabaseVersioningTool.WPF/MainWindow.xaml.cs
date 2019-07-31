@@ -14,14 +14,19 @@ namespace DatabaseVersioningTool.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static readonly DatabaseManager DatabaseManager = new DatabaseManager();
+
+        string SelectedDatabaseName
+        {
+            get
+            {
+                return cboDatabase.Text;
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        protected override void OnActivated(EventArgs e)
-        {
-            base.OnActivated(e);
 
             this.Setup();
         }
@@ -33,29 +38,15 @@ namespace DatabaseVersioningTool.WPF
             PopulateDatabaseComboSelector();
         }
 
-        private static readonly DatabaseManager DatabaseManager = new DatabaseManager();
-
-        string SelectedDatabaseName
-        {
-            get
-            {
-                return cboDatabase.Text;
-            }
-        }
-
-
-
         private void EnsurePrerequisites()
         {
             FileManager.Manager.Initialise();
             DatabaseManager.VersionTracker.Load();
         }
 
-
         private void PopulateDatabaseComboSelector()
         {
-            string errorMessage = string.Empty;
-            IEnumerable<string> databaseNames = DatabaseManager.GetDatabaseNames(App.GetDatabaseConnection(), out errorMessage);
+            IEnumerable<string> databaseNames = DatabaseManager.GetDatabaseNames(App.GetDatabaseConnection());
             if (databaseNames != null)
             {
                 foreach (string name in databaseNames)
@@ -63,29 +54,23 @@ namespace DatabaseVersioningTool.WPF
                     cboDatabase.Items.Add(new ComboBoxItem() { Content = name });
                 }
             }
-            else
-            {
-                System.Windows.Forms.MessageBox.Show(errorMessage);
-            }
         }
 
         private void PopulateVersionSelector()
         {
             cboVersion.Items.Clear();
-            DatabaseVersionCollection database = DatabaseManager.VersionTracker.Versions.SingleOrDefault(x => x.Name == App.GetDatabaseConnection().DatabaseName);
+            var database = DatabaseManager.VersionTracker.Versions.SingleOrDefault(x => x.Name == App.GetDatabaseConnection().DatabaseName);
             if (database != null)
             {
-                foreach (DatabaseVersion version in database.Versions)
+                foreach (var version in database.Versions)
                 {
                     cboVersion.Items.Add(new ComboBoxItem() { Content = version.To });
                 }
             }
         }
 
-
         private void btnRestore_Click(object sender, RoutedEventArgs e)
         {
-            string errorMessage;
             SetStateAsBusy();
 
             var dlg = new System.Windows.Forms.OpenFileDialog();
@@ -93,13 +78,14 @@ namespace DatabaseVersioningTool.WPF
 
             if (result == System.Windows.Forms.DialogResult.OK || result == System.Windows.Forms.DialogResult.Yes)
             {
-                if (DatabaseManager.RestoreDatabase(App.GetDatabaseConnection(), SelectedDatabaseName, dlg.FileName, out errorMessage))
+                try
                 {
-                    System.Windows.Forms.MessageBox.Show(string.Format("{0} successfully restored", SelectedDatabaseName));
+                    DatabaseManager.RestoreDatabase(App.GetDatabaseConnection(), SelectedDatabaseName, dlg.FileName);
+                    System.Windows.Forms.MessageBox.Show($"{SelectedDatabaseName} successfully restored");
                 }
-                else
+                catch
                 {
-                    System.Windows.Forms.MessageBox.Show(errorMessage);
+                    System.Windows.Forms.MessageBox.Show($"Problem with restoring database {SelectedDatabaseName} to directory, check you have write permissions to this directory", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
 
@@ -120,22 +106,22 @@ namespace DatabaseVersioningTool.WPF
                 {
                     try
                     {
-                        success = DatabaseManager.BackUpDatabase(App.GetDatabaseConnection(), dlg.SelectedPath);
+                        DatabaseManager.BackUpDatabase(App.GetDatabaseConnection(), dlg.SelectedPath);
                     }
                     catch
                     {
-                        System.Windows.Forms.MessageBox.Show("Problem with writing to directory, check you have write permissions to this directory", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        System.Windows.Forms.MessageBox.Show($"Problem with writing to directory { dlg.SelectedPath }, check you have write permissions to this directory", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
 
             if (success)
             {
-                System.Windows.Forms.MessageBox.Show(String.Format("{0} successfully backed up", SelectedDatabaseName));
+                System.Windows.Forms.MessageBox.Show($"{SelectedDatabaseName} successfully backed up");
             }
             else
             {
-                System.Windows.Forms.MessageBox.Show(String.Format("backup failed for {0}", SelectedDatabaseName), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show($"backup failed for {SelectedDatabaseName}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             SetStateAsFree();
@@ -146,17 +132,16 @@ namespace DatabaseVersioningTool.WPF
             SetStateAsBusy();
 
             string sql = txtScript.Text;
-            string errorMessage = string.Empty;
 
             try
             {
-                DatabaseManager.RunUpdate(App.GetDatabaseConnection(), sql);
+                DatabaseManager.ValidateSQL(App.GetDatabaseConnection(), sql);
 
                 DatabaseManager.CreateDatabaseUpdate(App.GetDatabaseConnection(), sql);
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message, "Error Creating Update", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(ex.Message, "Error creating update", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             PopulateVersionSelector();
@@ -168,12 +153,20 @@ namespace DatabaseVersioningTool.WPF
 
         private void btnUpgrade_Click(object sender, RoutedEventArgs e)
         {
+            if(cboVersion.SelectedValue == null)
+            {
+                System.Windows.MessageBox.Show("No version selected");
+                return;
+            }
+
             string version = (string)((ContentControl)(cboVersion).SelectedValue).Content;
 
             try
             {
-                DatabaseManager.Upgrade(App.GetDatabaseConnection(), version);
-                System.Windows.MessageBox.Show("Upgrade Successful");
+                DatabaseManager.UpgradeDatabaseToVersion(App.GetDatabaseConnection(), version);
+                string currentVersion = DatabaseManager.GetDatabaseVersion(App.GetDatabaseConnection());
+                lblDbVersion.Content = currentVersion;
+                System.Windows.MessageBox.Show($"Upgrade to {currentVersion} successful");
             }
             catch (Exception ex)
             {
@@ -181,13 +174,20 @@ namespace DatabaseVersioningTool.WPF
             }
         }
 
-
         private void cboDatabase_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetStateAsBusy();
 
-            btnBackup.IsEnabled = true;
-            btnRestore.IsEnabled = true;
+            bool enable = true;
+
+            btnBackup.IsEnabled = enable;
+            btnRestore.IsEnabled = enable;
+            btnCreateScripts.IsEnabled = enable;
+
+            cboVersion.IsEnabled = enable;
+
+            txtScript.IsEnabled = enable;
+            btnCreateUpdate.IsEnabled = enable;
 
             string selectedDatabase = (string)((ContentControl)((System.Windows.Controls.ComboBox)(sender)).SelectedValue).Content;
             App.DatabaseName = selectedDatabase;
@@ -199,22 +199,28 @@ namespace DatabaseVersioningTool.WPF
             SetStateAsFree();
         }
 
-
-
         private void cboVersion_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0)
             {
-                btnUpgrade.IsEnabled = ((ComboBoxItem)e.AddedItems[0]).IsEnabled;
+                bool enable = ((ComboBoxItem)e.AddedItems[0]).IsEnabled;
+
+                btnUpgrade.IsEnabled = enable;
             }
         }
 
+        private void btnCreateScripts_Click(object sender, RoutedEventArgs e)
+        {
+            DatabaseManager.GenerateCreateScripts(App.GetDatabaseConnection());
+        }
 
         #region Shared
 
         private void SetSelectedVersion()
         {
             string version = DatabaseManager.GetDatabaseVersion(App.GetDatabaseConnection());
+
+            lblDbVersion.Content = version;
 
             foreach (ComboBoxItem item in cboVersion.Items)
             {
