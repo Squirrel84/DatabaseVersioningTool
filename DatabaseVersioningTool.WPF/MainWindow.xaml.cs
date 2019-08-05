@@ -14,8 +14,6 @@ namespace DatabaseVersioningTool.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static readonly DatabaseManager DatabaseManager = new DatabaseManager();
-
         string SelectedDatabaseName
         {
             get
@@ -41,12 +39,12 @@ namespace DatabaseVersioningTool.WPF
         private void EnsurePrerequisites()
         {
             FileManager.Manager.Initialise();
-            DatabaseManager.VersionTracker.Load();
+            App.DatabaseManager.VersionTracker.Load();
         }
 
         private void PopulateDatabaseComboSelector()
         {
-            IEnumerable<string> databaseNames = DatabaseManager.GetDatabaseNames(App.GetDatabaseConnection());
+            IEnumerable<string> databaseNames = App.DatabaseManager.GetDatabaseNames(App.GetDatabaseConnection());
             if (databaseNames != null)
             {
                 foreach (string name in databaseNames)
@@ -59,7 +57,7 @@ namespace DatabaseVersioningTool.WPF
         private void PopulateVersionSelector()
         {
             cboVersion.Items.Clear();
-            var database = DatabaseManager.VersionTracker.Versions.SingleOrDefault(x => x.Name == App.GetDatabaseConnection().DatabaseName);
+            var database = App.DatabaseManager.VersionTracker.Versions.SingleOrDefault(x => x.Name == App.GetDatabaseConnection().DatabaseName);
             if (database != null)
             {
                 foreach (var version in database.Versions)
@@ -80,7 +78,7 @@ namespace DatabaseVersioningTool.WPF
             {
                 try
                 {
-                    DatabaseManager.RestoreDatabase(App.GetDatabaseConnection(), SelectedDatabaseName, dlg.FileName);
+                    App.DatabaseManager.RestoreDatabase(App.GetDatabaseConnection(), SelectedDatabaseName, dlg.FileName);
                     System.Windows.Forms.MessageBox.Show($"{SelectedDatabaseName} successfully restored");
                 }
                 catch
@@ -106,7 +104,7 @@ namespace DatabaseVersioningTool.WPF
                 {
                     try
                     {
-                        DatabaseManager.BackUpDatabase(App.GetDatabaseConnection(), dlg.SelectedPath);
+                        App.DatabaseManager.BackUpDatabase(App.GetDatabaseConnection(), dlg.SelectedPath);
                     }
                     catch
                     {
@@ -135,9 +133,9 @@ namespace DatabaseVersioningTool.WPF
 
             try
             {
-                DatabaseManager.ValidateSQL(App.GetDatabaseConnection(), sql);
+                App.DatabaseManager.ValidateSQL(App.GetDatabaseConnection(), sql);
 
-                DatabaseManager.CreateDatabaseUpdate(App.GetDatabaseConnection(), sql);
+                App.DatabaseManager.CreateDatabaseUpdate(App.GetDatabaseConnection(), sql);
             }
             catch (Exception ex)
             {
@@ -163,8 +161,8 @@ namespace DatabaseVersioningTool.WPF
 
             try
             {
-                DatabaseManager.UpgradeDatabaseToVersion(App.GetDatabaseConnection(), version);
-                string currentVersion = DatabaseManager.GetDatabaseVersion(App.GetDatabaseConnection());
+                App.DatabaseManager.UpgradeDatabaseToVersion(App.GetDatabaseConnection(), version);
+                string currentVersion = App.DatabaseManager.GetDatabaseVersion(App.GetDatabaseConnection());
                 lblDbVersion.Content = currentVersion;
                 System.Windows.MessageBox.Show($"Upgrade to {currentVersion} successful");
             }
@@ -211,14 +209,14 @@ namespace DatabaseVersioningTool.WPF
 
         private void btnCreateScripts_Click(object sender, RoutedEventArgs e)
         {
-            DatabaseManager.GenerateCreateScripts(App.GetDatabaseConnection());
+            App.DatabaseManager.GenerateCreateScripts(App.GetDatabaseConnection());
         }
 
         #region Shared
 
         private void SetSelectedVersion()
         {
-            string version = DatabaseManager.GetDatabaseVersion(App.GetDatabaseConnection());
+            string version = App.DatabaseManager.GetDatabaseVersion(App.GetDatabaseConnection());
 
             lblDbVersion.Content = version;
 

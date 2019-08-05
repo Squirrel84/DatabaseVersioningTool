@@ -65,7 +65,7 @@ namespace DatabaseVersioningTool.DataAccess
             }
         }
 
-        internal string GeneratePhysicalUpdate(string dbName, string versionName, string sql)
+        public string GeneratePhysicalUpdate(string dbName, string versionName, string sql)
         {
             string upgradePath = GetUpgradeFolderName(dbName);
             System.IO.Directory.CreateDirectory(upgradePath);
@@ -86,7 +86,7 @@ namespace DatabaseVersioningTool.DataAccess
             return upgradeFullPath;
         }
 
-        internal string GetSqlScript(string dbName, string versionName)
+        public string GetSqlScript(string dbName, string versionName)
         {
             string upgradeFullPath = GetUpgradePathAndFileName(dbName, versionName);
 

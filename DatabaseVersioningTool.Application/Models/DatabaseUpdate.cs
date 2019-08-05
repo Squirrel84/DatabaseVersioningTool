@@ -2,6 +2,6 @@
 {
     public class DatabaseUpdate
     {
-        public string Content { get; internal set; }
+        public string Content { get; set; }
     }
 }

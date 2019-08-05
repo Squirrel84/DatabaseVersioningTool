@@ -156,7 +156,7 @@ namespace DatabaseVersioningTool.DataAccess
             ReadFile();
         }
 
-        internal VC GetDatabaseVersions(string dbName)
+        public VC GetDatabaseVersions(string dbName)
         {
             if(!Versions.Any(x => x.Name == dbName))
             {
