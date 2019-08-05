@@ -123,11 +123,11 @@
       <Project>{ed960e57-28d1-4c37-b933-9f63fdac59f7}</Project>
       <Name>DatabaseVersioningTool.Application</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DatabaseVersioningTool.Sql\DatabaseVersioningTool.DataAccess.Sql.csproj">
+    <ProjectReference Include="..\DatabaseVersioningTool.DataAccess.Sql\DatabaseVersioningTool.DataAccess.Sql.csproj">
       <Project>{3c0bfeea-b2ea-497f-ade3-cd339ec47cb2}</Project>
       <Name>DatabaseVersioningTool.DataAccess.Sql</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DatabaseVersioningTool.Structure\DatabaseVersioningTool.DataAccess.csproj">
+    <ProjectReference Include="..\DatabaseVersioningTool.DataAccess\DatabaseVersioningTool.DataAccess.csproj">
       <Project>{62b5e047-3dbe-4171-9666-8f74d3d894f6}</Project>
       <Name>DatabaseVersioningTool.DataAccess</Name>
     </ProjectReference>

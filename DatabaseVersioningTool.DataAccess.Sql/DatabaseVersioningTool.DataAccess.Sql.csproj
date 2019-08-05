@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DatabaseVersioningTool.Application\DatabaseVersioningTool.Application.csproj" />
-    <ProjectReference Include="..\DatabaseVersioningTool.Structure\DatabaseVersioningTool.DataAccess.csproj" />
+    <ProjectReference Include="..\DatabaseVersioningTool.DataAccess\DatabaseVersioningTool.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseVersioningTool.Application", "DatabaseVersioningTool.Application\DatabaseVersioningTool.Application.csproj", "{ED960E57-28D1-4C37-B933-9F63FDAC59F7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseVersioningTool.DataAccess.Sql", "DatabaseVersioningTool.Sql\DatabaseVersioningTool.DataAccess.Sql.csproj", "{3C0BFEEA-B2EA-497F-ADE3-CD339EC47CB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseVersioningTool.DataAccess.Sql", "DatabaseVersioningTool.DataAccess.Sql\DatabaseVersioningTool.DataAccess.Sql.csproj", "{3C0BFEEA-B2EA-497F-ADE3-CD339EC47CB2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseVersioningTool.DataAccess", "DatabaseVersioningTool.Structure\DatabaseVersioningTool.DataAccess.csproj", "{62B5E047-3DBE-4171-9666-8F74D3D894F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseVersioningTool.DataAccess", "DatabaseVersioningTool.DataAccess\DatabaseVersioningTool.DataAccess.csproj", "{62B5E047-3DBE-4171-9666-8F74D3D894F6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseVersioningTool.WPF", "DatabaseVersioningTool.WPF\DatabaseVersioningTool.WPF.csproj", "{8042037F-60D8-49E6-8664-D373E31E30D9}"
 EndProject
