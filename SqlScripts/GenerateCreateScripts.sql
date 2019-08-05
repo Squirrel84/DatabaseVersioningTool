@@ -18,8 +18,6 @@ OPEN TablesCursor
 FETCH NEXT FROM TablesCursor INTO @table_name
 WHILE ( @@FETCH_STATUS = 0 )
 BEGIN
-	SET @SQL = ''
-
 	SELECT 
 		  @object_name = '[' + s.name + '].[' + o.name + ']'
 		, @object_id = o.[object_id]
@@ -52,7 +50,7 @@ BEGIN
 		JOIN sys.columns c WITH (NOWAIT) ON c.[object_id] = k.parent_object_id AND c.column_id = k.parent_column_id
 		WHERE k.parent_object_id = @object_id
 	)
-	SELECT @SQL = 'CREATE TABLE ' + @object_name + CHAR(13) + '(' + CHAR(13) + STUFF((
+	SELECT @SQL += 'CREATE TABLE ' + @object_name + CHAR(13) + '(' + CHAR(13) + STUFF((
 		SELECT CHAR(9) + ', [' + c.name + '] ' + 
 			CASE WHEN c.is_computed = 1
 				THEN 'AS ' + cc.[definition] 
@@ -155,9 +153,9 @@ BEGIN
 		), '')
 
 	FETCH NEXT FROM TablesCursor INTO @table_name
-
-	PRINT @SQL
 END
+
+SELECT @SQL
 
 CLOSE TablesCursor
 DEALLOCATE TablesCursor

@@ -1,5 +1,4 @@
 ﻿using System.Configuration;
-using System.Windows;
 
 using DatabaseVersioningTool.DataAccess;
 using DatabaseVersioningTool.DataAccess.Interfaces;
@@ -10,20 +9,23 @@ namespace DatabaseVersioningTool.WPF
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App
     {
         public static string DatabaseName = "master";
 
         private static object padlock = new object();
 
-        private static IDatabaseManager databaseManager = null;
+        private static IDatabaseManager<SqlDatabaseUpdate> databaseManager = null;
 
-        public static DatabaseConnection GetDatabaseConnection()
+        public static DatabaseConnection DatabaseConnection
         {
-            return new SqlDatabaseConnection(DatabaseName, new SqlConnectionStringBuilder((string)ConfigurationManager.AppSettings["ServerName"], DatabaseName).Build());
+            get
+            {
+                return new SqlDatabaseConnection(DatabaseName, new SqlConnectionStringBuilder((string)ConfigurationManager.AppSettings["ServerName"], DatabaseName).Build());
+            }
         }
 
-        public static IDatabaseManager DatabaseManager
+        public static IDatabaseManager<SqlDatabaseUpdate> DatabaseManager
         {
             get
             {

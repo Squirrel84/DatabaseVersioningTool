@@ -1,23 +1,16 @@
-﻿using DatabaseVersioningTool.DataAccess.Interfaces;
-using DatabaseVersioningTool.DataAccess.Models;
+﻿using DatabaseVersioningTool.DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace DatabaseVersioningTool.DataAccess
+namespace DatabaseVersioningTool.DataAccess.Sql
 {
-    public class SqlDatabaseManager : IDatabaseManager
+    public class SqlDatabaseManager : DatabaseManager<SqlDatabaseUpdate>
     {
-        public VersionTracker<DatabaseVersionCollection, DatabaseVersion> VersionTracker { get; set; }
         private static List<string> DatabaseNames { get; set; }
-
-        public string GenerateVersionLabel()
-        {
-            DateTime date = DateTime.UtcNow;
-            return string.Format("{0}{1}{2}_{3}{4}{5}_{6}", date.Year.ToString("0000"), date.Month.ToString("00"), date.Day.ToString("00"), date.Hour.ToString("00"), date.Minute.ToString("00"), date.Second.ToString("00"), date.Millisecond.ToString("000"));
-        }
 
         private DatabaseUpdate CreateUpdate(string sql)
         {
@@ -48,20 +41,14 @@ namespace DatabaseVersioningTool.DataAccess
             return dbUpdate;
         }
 
-
-        public SqlDatabaseManager()
-        {
-            this.VersionTracker = new VersionTracker<DatabaseVersionCollection, DatabaseVersion>();
-        }
-
-        public IEnumerable<string> GetDatabaseNames(DatabaseConnection dbAccess)
+        public override IEnumerable<string> GetDatabaseNames(DatabaseConnection databaseConnection)
         {
             string errorMessage = string.Empty;
             if (DatabaseNames == null)
             {
                 DatabaseNames = new List<string>();
 
-                DataTable dtNames = dbAccess.ExecuteReader("EXEC sp_databases", out errorMessage);
+                DataTable dtNames = databaseConnection.ExecuteReader("EXEC sp_databases", out errorMessage);
                 if (dtNames == null)
                 {
                     throw new Exception($"Error fetching database names from database - { errorMessage }");
@@ -75,11 +62,11 @@ namespace DatabaseVersioningTool.DataAccess
             return DatabaseNames;
         }
 
-        public void RestoreDatabase(DatabaseConnection dbAccess, string dbName, string filePath)
+        public override void RestoreDatabase(DatabaseConnection databaseConnection, string dbName, string filePath)
         {
             string errorMessage = string.Empty;
 
-            DataTable resultsTable = dbAccess.ExecuteReader(string.Format("RESTORE FILELISTONLY FROM DISK = '{0}'", filePath), out errorMessage);
+            DataTable resultsTable = databaseConnection.ExecuteReader(string.Format("RESTORE FILELISTONLY FROM DISK = '{0}'", filePath), out errorMessage);
 
             if (resultsTable == null)
             {
@@ -94,41 +81,86 @@ namespace DatabaseVersioningTool.DataAccess
             }
             resultsTable = null;
 
-            string dataPath = dbAccess.ExecuteScalar<string>("SELECT SUBSTRING(physical_name, 1, CHARINDEX(N'master.mdf', LOWER(physical_name)) - 1) FROM master.sys.master_files WHERE database_id = 1 AND FILE_ID = 1");
+            string dataPath = databaseConnection.ExecuteScalar<string>("SELECT SUBSTRING(physical_name, 1, CHARINDEX(N'master.mdf', LOWER(physical_name)) - 1) FROM master.sys.master_files WHERE database_id = 1 AND FILE_ID = 1");
 
-            dbAccess.ExcecuteScript(string.Format("ALTER DATABASE {0} SET SINGLE_USER WITH ROLLBACK IMMEDIATE", dbName));
+            databaseConnection.ExcecuteScript(string.Format("ALTER DATABASE {0} SET SINGLE_USER WITH ROLLBACK IMMEDIATE", dbName));
 
-            dbAccess.ExcecuteScript(string.Format("USE master RESTORE DATABASE {0} FROM DISK = '{1}' WITH MOVE '{2}' TO '{4}{2}.mdf', MOVE '{3}' TO '{4}{3}.ldf'", dbName, filePath, logicalNames[0], logicalNames[1], dataPath));
+            databaseConnection.ExcecuteScript(string.Format("USE master RESTORE DATABASE {0} FROM DISK = '{1}' WITH MOVE '{2}' TO '{4}{2}.mdf', MOVE '{3}' TO '{4}{3}.ldf'", dbName, filePath, logicalNames[0], logicalNames[1], dataPath));
 
-            dbAccess.ExcecuteScript(string.Format("ALTER DATABASE {0} SET MULTI_USER", dbName));
+            databaseConnection.ExcecuteScript(string.Format("ALTER DATABASE {0} SET MULTI_USER", dbName));
         }
 
-        public void BackUpDatabase(DatabaseConnection dbAccess, string path)
+        public override void BackUpDatabase(DatabaseConnection databaseConnection, string filePath)
         {
-            string filePath = string.Format(@"{0}\{1}_{2}.bak", path, dbAccess.DatabaseName, DateTime.UtcNow.ToString().Replace("/", string.Empty).Replace(":", string.Empty).Replace(" ", string.Empty));
-            dbAccess.ExcecuteScript(string.Format("BACKUP DATABASE {0} TO DISK = '{1}' WITH FORMAT", dbAccess.DatabaseName, filePath));
+            filePath = string.Format(@"{0}\{1}_{2}.bak", filePath, databaseConnection.DatabaseName, DateTime.UtcNow.ToString().Replace("/", string.Empty).Replace(":", string.Empty).Replace(" ", string.Empty));
+            databaseConnection.ExcecuteScript(string.Format("BACKUP DATABASE {0} TO DISK = '{1}' WITH FORMAT", databaseConnection.DatabaseName, filePath));
         }
 
-        public void CreateDatabaseUpdate(DatabaseConnection dbAccess, string sql)
+        public override void CreateDatabaseUpdate(DatabaseConnection databaseConnection, SqlDatabaseUpdate update)
         {
-            var result = CreateUpdate(sql);
+            var result = CreateUpdate(update.Sql);
 
-            string currentVersion = GetDatabaseVersion(dbAccess);
+            string currentVersion = GetDatabaseVersion(databaseConnection);
             string newVersion = GenerateVersionLabel();
 
-            string path = FileManager.Manager.GeneratePhysicalUpdate(dbAccess.DatabaseName, newVersion, result.Content);
+            string path = FileManager.Manager.GeneratePhysicalUpdate(databaseConnection.DatabaseName, newVersion, result.Content);
 
-            DatabaseVersionCollection databaseVersion = VersionTracker.GetDatabaseVersions(dbAccess.DatabaseName);
+            DatabaseVersionCollection databaseVersion = VersionTracker.GetDatabaseVersions(databaseConnection.DatabaseName);
             databaseVersion.AddVersion(new DatabaseVersion() { Name = newVersion, To = newVersion, From = currentVersion, Path = path });
             VersionTracker.WriteFile();
         }
 
-        public void ValidateSQL(DatabaseConnection dbAccess, string sql)
+        public override void CreateInitialVersion(DatabaseConnection databaseConnection, SqlDatabaseUpdate update)
         {
-            dbAccess.ExcecuteScript(sql);
+            var result = CreateUpdate(update.Sql);
+
+            string path = FileManager.Manager.GeneratePhysicalUpdate(databaseConnection.DatabaseName, DatabaseManager.CreateVersionNumber, result.Content);
+
+            DatabaseVersionCollection databaseVersion = VersionTracker.GetDatabaseVersions(databaseConnection.DatabaseName);
+            databaseVersion.AddVersion(new DatabaseVersion() { Name = DatabaseManager.CreateVersionNumber, From = DatabaseManager.CreateVersionNumber, To = DatabaseManager.InitialVersionNumber, Path = path });
+            VersionTracker.WriteFile();
         }
 
-        private void IncrementVersion(DatabaseConnection dbAccess, string versionNumber)
+        public override void ValidateUpdate(DatabaseConnection databaseConnection, SqlDatabaseUpdate update)
+        {
+            databaseConnection.ExcecuteScript(update.Sql);
+        }
+
+        public override string GetDatabaseVersion(DatabaseConnection databaseConnection)
+        {
+            string version = databaseConnection.ExecuteScalar<string>("SELECT value FROM sys.extended_properties p WHERE class = 0 AND name = 'Version'");
+            if (String.IsNullOrEmpty(version))
+            {
+                return DatabaseManager.InitialVersionNumber;
+            }
+            return version;
+        }
+
+        public override void UpgradeDatabaseToVersion(DatabaseConnection databaseConnection, string targetVersion)
+        {
+            string currentVersion = GetDatabaseVersion(databaseConnection);
+
+            IEnumerable<DatabaseVersion> versionsToRun = VersionTracker.GetAvailableVersions(databaseConnection.DatabaseName, currentVersion, targetVersion);
+
+            foreach (var version in versionsToRun)
+            {
+                string sql = FileManager.Manager.GetSqlScript(databaseConnection.DatabaseName, version.Name);
+
+                databaseConnection.ExcecuteScript(sql);
+                IncrementVersion(databaseConnection, version.To);
+            }
+        }
+
+        public override void GenerateCreateScripts(DatabaseConnection databaseConnection)
+        {
+            string sqlText = File.ReadAllText($"{Environment.CurrentDirectory}\\SqlScripts\\GenerateCreateScripts.sql");
+
+            string sqlCreateScript =  databaseConnection.ExecuteScalar<string>(sqlText);
+
+            this.CreateInitialVersion(databaseConnection, new SqlDatabaseUpdate() { Sql = sqlCreateScript });
+        }
+
+        private void IncrementVersion(DatabaseConnection databaseConnection, string versionNumber)
         {
             StringBuilder sbScriptUpdater = new StringBuilder();
             sbScriptUpdater.AppendLine("BEGIN TRY");
@@ -137,71 +169,10 @@ namespace DatabaseVersioningTool.DataAccess
             sbScriptUpdater.AppendLine("BEGIN CATCH");
             sbScriptUpdater.AppendLine("END CATCH");
 
-            dbAccess.ExcecuteScript(sbScriptUpdater.ToString());
+            databaseConnection.ExcecuteScript(sbScriptUpdater.ToString());
             sbScriptUpdater = null;
 
-            dbAccess.ExcecuteScript(string.Format("EXEC sys.sp_addextendedproperty @name = N'Version', @value = N'{0}';", versionNumber));
-        }
-
-        public string GetDatabaseVersion(DatabaseConnection dbAccess)
-        {
-            string version = dbAccess.ExecuteScalar<string>("SELECT value FROM sys.extended_properties p WHERE class = 0 AND name = 'Version'");
-            if (String.IsNullOrEmpty(version))
-            {
-                return "1.0";
-            }
-            return version;
-        }
-
-        public void UpgradeDatabaseToVersion(DatabaseConnection dbAccess, string targetVersion)
-        {
-            string currentVersion = GetDatabaseVersion(dbAccess);
-
-            DatabaseVersionCollection databaseVersions = VersionTracker.GetDatabaseVersions(dbAccess.DatabaseName);
-
-            IEnumerable<DatabaseVersion> versionsToRun = GetVersionsToRun(currentVersion, targetVersion, databaseVersions);
-
-            foreach (var version in versionsToRun)
-            {
-                string sql = FileManager.Manager.GetSqlScript(dbAccess.DatabaseName, version.Name);
-
-                dbAccess.ExcecuteScript(sql);
-                IncrementVersion(dbAccess, version.To);
-            }
-        }
-
-        private IEnumerable<DatabaseVersion> GetVersionsToRun(string currentVersion, string targetVersion, DatabaseVersionCollection databaseVersions)
-        {
-            List<DatabaseVersion> versionScriptsToRun = new List<DatabaseVersion>();
-            string versionToTrack = currentVersion;
-            bool versionScriptToRun = true;
-
-            while (versionScriptToRun)
-            {
-                var databaseVersion = databaseVersions.Versions.FirstOrDefault(x => x.From == versionToTrack);
-
-                versionScriptToRun = databaseVersion != null;
-
-                if (!versionScriptToRun)
-                {
-                    break;
-                }
-
-                versionScriptsToRun.Add(databaseVersion);
-                versionToTrack = databaseVersion.To;
-
-                if (targetVersion == versionToTrack)
-                {
-                    break;
-                }
-            }
-
-            return versionScriptsToRun;
-        }
-
-        public void GenerateCreateScripts(DatabaseConnection dbAccess)
-        {
-            throw new NotImplementedException();
+            databaseConnection.ExcecuteScript(string.Format("EXEC sys.sp_addextendedproperty @name = N'Version', @value = N'{0}';", versionNumber));
         }
     }
 }

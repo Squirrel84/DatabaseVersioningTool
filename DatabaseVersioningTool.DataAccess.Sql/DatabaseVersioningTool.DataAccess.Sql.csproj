@@ -5,12 +5,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\SqlScripts\GenerateCreateScripts.sql" Link="SqlScripts\GenerateCreateScripts.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DatabaseVersioningTool.Application\DatabaseVersioningTool.Application.csproj" />
     <ProjectReference Include="..\DatabaseVersioningTool.DataAccess\DatabaseVersioningTool.DataAccess.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="SqlScripts\" />
   </ItemGroup>
 
 </Project>

@@ -164,5 +164,36 @@ namespace DatabaseVersioningTool.DataAccess
             }
             return Versions.FirstOrDefault(x => x.Name == dbName);
         }
+
+        public IEnumerable<V> GetAvailableVersions(string databaseName, string currentVersion, string targetVersion = null)
+        {
+            var databaseCollection = GetDatabaseVersions(databaseName);
+
+            List<V> versionScriptsToRun = new List<V>();
+            string versionToTrack = currentVersion;
+            bool versionScriptToRun = true;
+
+            while (versionScriptToRun)
+            {
+                var databaseVersion = databaseCollection.Versions.FirstOrDefault(x => x.From == versionToTrack);
+
+                versionScriptToRun = databaseVersion != null;
+
+                if (!versionScriptToRun)
+                {
+                    break;
+                }
+
+                versionScriptsToRun.Add(databaseVersion);
+                versionToTrack = databaseVersion.To;
+
+                if (targetVersion == versionToTrack)
+                {
+                    break;
+                }
+            }
+
+            return versionScriptsToRun;
+        }
     }
 }
