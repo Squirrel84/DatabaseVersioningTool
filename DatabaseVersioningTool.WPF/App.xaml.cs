@@ -2,6 +2,7 @@
 using System.Windows;
 
 using DatabaseVersioningTool.DataAccess;
+using DatabaseVersioningTool.DataAccess.Interfaces;
 using DatabaseVersioningTool.DataAccess.Sql;
 
 namespace DatabaseVersioningTool.WPF

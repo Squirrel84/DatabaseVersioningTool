@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
+﻿using System.Collections.Generic;
 using DatabaseVersioningTool.DataAccess.Models;
 
-namespace DatabaseVersioningTool.DataAccess
+namespace DatabaseVersioningTool.DataAccess.Interfaces
 {
     public interface IDatabaseManager
     {
