@@ -1,7 +1,7 @@
-﻿using DatabaseVersioningTool.DataAccess.Models.Interfaces;
+﻿using DatabaseVersioningTool.Application.Models.Interfaces;
 using System.Collections.Generic;
 
-namespace DatabaseVersioningTool.DataAccess.Models
+namespace DatabaseVersioningTool.Application.Models
 {
     public class DatabaseVersionCollection : IDatabaseVersionCollection<DatabaseVersion>
     {

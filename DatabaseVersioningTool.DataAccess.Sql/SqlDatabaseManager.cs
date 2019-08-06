@@ -1,4 +1,5 @@
-﻿using DatabaseVersioningTool.DataAccess.Models;
+﻿using DatabaseVersioningTool.Application;
+using DatabaseVersioningTool.Application.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;

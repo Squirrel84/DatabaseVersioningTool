@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace DatabaseVersioningTool.DataAccess
+namespace DatabaseVersioningTool.Application
 {
     public class FileManager
     {

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using DatabaseVersioningTool.Application.Models.Interfaces;
-using DatabaseVersioningTool.DataAccess.Models;
+using DatabaseVersioningTool.Application.Models;
+using DatabaseVersioningTool.DataAccess;
 
-namespace DatabaseVersioningTool.DataAccess.Interfaces
+namespace DatabaseVersioningTool.Application.Interfaces
 {
     public interface IDatabaseManager
     {

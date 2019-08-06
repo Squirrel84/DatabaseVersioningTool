@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using System.Reflection;
-using DatabaseVersioningTool.DataAccess.Models.Interfaces;
+using DatabaseVersioningTool.Application.Models.Interfaces;
 
-namespace DatabaseVersioningTool.DataAccess
+namespace DatabaseVersioningTool.Application
 {
     public class VersionTracker<VC, V>
         where VC : IDatabaseVersionCollection<V>, new()

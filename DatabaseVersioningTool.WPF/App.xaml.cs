@@ -1,7 +1,7 @@
 ﻿using System.Configuration;
 
 using DatabaseVersioningTool.DataAccess;
-using DatabaseVersioningTool.DataAccess.Interfaces;
+using DatabaseVersioningTool.Application.Interfaces;
 using DatabaseVersioningTool.DataAccess.Sql;
 
 namespace DatabaseVersioningTool.WPF
@@ -9,7 +9,7 @@ namespace DatabaseVersioningTool.WPF
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App
+    public partial class App : System.Windows.Application
     {
         public static string DatabaseName = "master";
 

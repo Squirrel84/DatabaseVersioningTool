@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 
-using DatabaseVersioningTool.DataAccess;
+using DatabaseVersioningTool.Application;
 using DatabaseVersioningTool.DataAccess.Sql;
 
 namespace DatabaseVersioningTool.WPF
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         string SelectedDatabaseName
