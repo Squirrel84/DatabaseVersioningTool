@@ -8,14 +8,13 @@ namespace DatabaseVersioningTool.Application
     {
         private const string ScriptFolderName = "VersionScripts";
         private const string VersionFileName = "Versions.config";
-        private string currentDirectory = null;
-        private string versionFolderPath = null;
+        private string VersionFolderPath = null;
 
         public string VersionFilePath { get; private set; }
 
         private string GetUpgradeFolderName(string dbName)
         {
-            return System.IO.Path.Combine(versionFolderPath, $"{dbName}");
+            return System.IO.Path.Combine(VersionFolderPath, $"{dbName}");
         }
 
         private string GetUpgradePathAndFileName(string dbName, string versionName)
@@ -36,26 +35,24 @@ namespace DatabaseVersioningTool.Application
         }
         private static FileManager _manager { get; set; }
 
-        public void Initialise()
-        {
-            currentDirectory = Directory.GetCurrentDirectory();
-            
-            versionFolderPath = System.IO.Path.Combine(currentDirectory, ScriptFolderName);
+        public void Initialise(string scriptDirectory)
+        {            
+            this.VersionFolderPath = System.IO.Path.Combine(scriptDirectory, ScriptFolderName);
 
-            if (!System.IO.Directory.Exists(versionFolderPath))
+            if (!System.IO.Directory.Exists(this.VersionFolderPath))
             {
-                System.IO.Directory.CreateDirectory(versionFolderPath);
+                System.IO.Directory.CreateDirectory(this.VersionFolderPath);
             }
 
-            EnsureVersionFileExists(versionFolderPath);
+            EnsureVersionFileExists(this.VersionFolderPath);
         }
 
         private void EnsureVersionFileExists(string folderPath)
         {
-            VersionFilePath = System.IO.Path.Combine(folderPath, VersionFileName);
-            if (!System.IO.File.Exists(VersionFilePath))
+            this.VersionFilePath = System.IO.Path.Combine(folderPath, VersionFileName);
+            if (!System.IO.File.Exists(this.VersionFilePath))
             {
-                using (var fs = System.IO.File.Create(VersionFilePath))
+                using (var fs = System.IO.File.Create(this.VersionFilePath))
                 {
                     using (TextWriter tw = new StreamWriter(fs, Encoding.UTF8))
                     {
