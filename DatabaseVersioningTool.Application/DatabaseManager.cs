@@ -1,11 +1,12 @@
 ﻿using DatabaseVersioningTool.Application.Models.Interfaces;
-using DatabaseVersioningTool.DataAccess.Interfaces;
-using DatabaseVersioningTool.DataAccess.Models;
+using DatabaseVersioningTool.Application.Interfaces;
+using DatabaseVersioningTool.Application.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using DatabaseVersioningTool.DataAccess;
 
-namespace DatabaseVersioningTool.DataAccess
+namespace DatabaseVersioningTool.Application
 {
     public abstract class DatabaseManager
     {

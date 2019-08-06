@@ -1,4 +1,4 @@
-﻿namespace DatabaseVersioningTool.DataAccess.Models
+﻿namespace DatabaseVersioningTool.Application.Models
 {
     public class DatabaseUpdate
     {

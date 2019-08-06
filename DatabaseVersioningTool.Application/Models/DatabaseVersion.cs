@@ -1,6 +1,6 @@
-﻿using DatabaseVersioningTool.DataAccess.Models.Interfaces;
+﻿using DatabaseVersioningTool.Application.Models.Interfaces;
 
-namespace DatabaseVersioningTool.DataAccess.Models
+namespace DatabaseVersioningTool.Application.Models
 {
     public class DatabaseVersion : IDatabaseVersion
     {

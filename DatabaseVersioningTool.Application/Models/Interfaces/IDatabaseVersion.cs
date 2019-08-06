@@ -1,4 +1,4 @@
-﻿namespace DatabaseVersioningTool.DataAccess.Models.Interfaces
+﻿namespace DatabaseVersioningTool.Application.Models.Interfaces
 {
     public interface IDatabaseVersion
     {

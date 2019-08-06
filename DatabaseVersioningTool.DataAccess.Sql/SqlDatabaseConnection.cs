@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 
-namespace DatabaseVersioningTool.DataAccess
+namespace DatabaseVersioningTool.DataAccess.Sql
 {
     public class SqlDatabaseConnection : DatabaseConnection
     {
