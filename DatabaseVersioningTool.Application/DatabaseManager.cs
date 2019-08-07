@@ -51,6 +51,8 @@ namespace DatabaseVersioningTool.Application
 
         public abstract void ValidateUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
 
+        public abstract IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection);
+
         protected void LogInfo(string message)
         {
             this.Logger.Info(message);

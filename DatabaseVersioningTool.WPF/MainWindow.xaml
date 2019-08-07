@@ -35,6 +35,7 @@
         <Label Grid.Row="2" Grid.Column="0" Content="Version:" HorizontalAlignment="Right"  />
         <ComboBox Grid.Row="2" Grid.Column="1" Name="cboVersion" Text="Please Select" SelectionChanged="cboVersion_SelectionChanged" IsEnabled="False" />
         <Button Grid.Row="2" Grid.Column="2" Name="btnUpgrade" Content="Upgrade" Click="btnUpgrade_Click" IsEnabled="False" />
+        <Button Grid.Row="2" Grid.Column="3" Name="btnCompare" Content="Compare" Click="btnCompare_Click" IsEnabled="False" />
 
         <TextBox Grid.Row="3" Grid.Column="1" Name="txtScript" AcceptsReturn="True" AcceptsTab="True" AutoWordSelection="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" />
         <TextBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Name="txtLog" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Background="Silver" IsEnabled="False" />

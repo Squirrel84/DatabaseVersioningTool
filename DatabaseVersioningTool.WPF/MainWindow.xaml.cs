@@ -234,6 +234,11 @@ namespace DatabaseVersioningTool.WPF
             SetStateAsFree();
         }
 
+        private void btnCompare_Click(object sender, RoutedEventArgs e)
+        {
+            App.DatabaseManager.CompareDatabase(App.DatabaseConnection);
+        }
+
         #region Shared
 
         private void SetSelectedVersion()

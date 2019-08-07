@@ -27,6 +27,7 @@ namespace DatabaseVersioningTool.Application.Interfaces
         void ValidateUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
 
         event EventHandler<LogUpdatedEventArgs> OnLogUpdated;
+        IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection);
     }
 
 }

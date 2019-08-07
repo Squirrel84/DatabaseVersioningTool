@@ -1,4 +1,5 @@
 ﻿using DatabaseVersioningTool.Application;
+using DatabaseVersioningTool.Application.Interfaces;
 using DatabaseVersioningTool.Application.Models;
 using DatabaseVersioningTool.Application.Models.Interfaces;
 using System;
