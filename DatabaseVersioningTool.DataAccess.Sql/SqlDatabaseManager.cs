@@ -1,5 +1,6 @@
 ﻿using DatabaseVersioningTool.Application;
 using DatabaseVersioningTool.Application.Models;
+using DatabaseVersioningTool.Application.Models.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -71,7 +72,9 @@ namespace DatabaseVersioningTool.DataAccess.Sql
 
             if (resultsTable == null)
             {
-                throw new Exception($"Error restoring database - { errorMessage }");
+                string exceptionMessage = $"Error restoring database - { errorMessage }";
+                LogError(exceptionMessage);
+                throw new Exception(exceptionMessage);
             }
 
             List<string> logicalNames = new List<string>();
@@ -141,15 +144,23 @@ namespace DatabaseVersioningTool.DataAccess.Sql
         {
             string currentVersion = GetDatabaseVersion(databaseConnection);
 
-            IEnumerable<DatabaseVersion> versionsToRun = VersionTracker.GetAvailableVersions(databaseConnection.DatabaseName, currentVersion, targetVersion);
+            this.LogInfo($"Upgrade from {currentVersion} to {targetVersion} - started");
+
+            IEnumerable <DatabaseVersion> versionsToRun = VersionTracker.GetAvailableVersions(databaseConnection.DatabaseName, currentVersion, targetVersion);
+
+            this.LogInfo($"{versionsToRun.Count()} upgrades found to run");
 
             foreach (var version in versionsToRun)
             {
                 string sql = FileManager.Manager.GetSqlScript(databaseConnection.DatabaseName, version.Name);
-
                 databaseConnection.ExcecuteScript(sql);
+
                 IncrementVersion(databaseConnection, version.To);
+
+                this.LogInfo($"- Upgrade from {version.From} to {version.To} - completed");
             }
+
+            this.LogInfo($"Upgrade from {currentVersion} to {targetVersion} - completed");
         }
 
         public override void GenerateCreateScripts(DatabaseConnection databaseConnection)
@@ -174,6 +185,11 @@ namespace DatabaseVersioningTool.DataAccess.Sql
             sbScriptUpdater = null;
 
             databaseConnection.ExcecuteScript(string.Format("EXEC sys.sp_addextendedproperty @name = N'Version', @value = N'{0}';", versionNumber));
+        }
+
+        public override IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection)
+        {
+            throw new NotImplementedException();
         }
     }
 }
