@@ -1,4 +1,5 @@
 ﻿using DatabaseVersioningTool.Application;
+using DatabaseVersioningTool.Application.Interfaces;
 using DatabaseVersioningTool.Application.Models;
 using System;
 using System.Collections.Generic;
@@ -174,6 +175,11 @@ namespace DatabaseVersioningTool.DataAccess.Sql
             sbScriptUpdater = null;
 
             databaseConnection.ExcecuteScript(string.Format("EXEC sys.sp_addextendedproperty @name = N'Version', @value = N'{0}';", versionNumber));
+        }
+
+        public override IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection)
+        {
+            throw new NotImplementedException();
         }
     }
 }

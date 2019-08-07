@@ -208,6 +208,7 @@ namespace DatabaseVersioningTool.WPF
 
             txtScript.IsEnabled = enable;
             btnCreateUpdate.IsEnabled = enable;
+            btnCompare.IsEnabled = enable;
 
             string selectedDatabase = (string)((ContentControl)((System.Windows.Controls.ComboBox)(sender)).SelectedValue).Content;
             App.DatabaseName = selectedDatabase;
@@ -232,6 +233,11 @@ namespace DatabaseVersioningTool.WPF
         private void btnCreateScripts_Click(object sender, RoutedEventArgs e)
         {
             App.DatabaseManager.GenerateCreateScripts(App.DatabaseConnection);
+        }
+
+        private void btnCompare_Click(object sender, RoutedEventArgs e)
+        {
+            App.DatabaseManager.CompareDatabase(App.DatabaseConnection);
         }
 
         #region Shared

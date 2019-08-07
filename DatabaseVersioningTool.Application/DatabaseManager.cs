@@ -46,5 +46,7 @@ namespace DatabaseVersioningTool.Application
         public abstract void UpgradeDatabaseToVersion(DatabaseConnection databaseConnection, string targetVersion);
 
         public abstract void ValidateUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
+
+        public abstract IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection);
     }
 }

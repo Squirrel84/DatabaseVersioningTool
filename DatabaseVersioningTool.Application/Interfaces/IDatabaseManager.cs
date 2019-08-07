@@ -18,10 +18,10 @@ namespace DatabaseVersioningTool.Application.Interfaces
     }
     public interface IDatabaseManager<T> : IDatabaseManager where T : IDatabaseUpdate
     {
-        
         void CreateInitialVersion(DatabaseConnection databaseConnection, T databaseUpdate);
         void CreateDatabaseUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
         void ValidateUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
+        IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection);
     }
 
 }
