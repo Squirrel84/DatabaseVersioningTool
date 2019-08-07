@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using DatabaseVersioningTool.DataAccess;
+using NLog;
 
 namespace DatabaseVersioningTool.Application
 {
@@ -17,11 +18,14 @@ namespace DatabaseVersioningTool.Application
     public abstract class DatabaseManager<T> : IDatabaseManager<T> where T : IDatabaseUpdate
     {
         public VersionTracker<DatabaseVersionCollection, DatabaseVersion> VersionTracker { get; private set; }
+        public ILogger Logger { get; set; }
 
         public DatabaseManager()
         {
             this.VersionTracker = new VersionTracker<DatabaseVersionCollection, DatabaseVersion>();
         }
+
+        public event EventHandler<LogUpdatedEventArgs> OnLogUpdated;
 
         public virtual string GenerateVersionLabel()
         {
@@ -48,5 +52,22 @@ namespace DatabaseVersioningTool.Application
         public abstract void ValidateUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
 
         public abstract IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection);
+
+        protected void LogInfo(string message)
+        {
+            this.Logger.Info(message);
+            alertLogUpdated(LogLevel.Info, message);
+        }
+
+        protected void LogError(string message)
+        {
+            this.Logger.Error(message);
+            alertLogUpdated(LogLevel.Error, message);
+        }
+
+        private void alertLogUpdated(LogLevel level, string message)
+        {
+            OnLogUpdated(this, new LogUpdatedEventArgs() { Level = level, Message = message });
+        }
     }
 }

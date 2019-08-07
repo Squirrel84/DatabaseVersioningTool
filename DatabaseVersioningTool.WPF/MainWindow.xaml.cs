@@ -13,7 +13,7 @@ namespace DatabaseVersioningTool.WPF
     public partial class MainWindow : Window
     {
         private static bool isSetup = false;
-
+        
         string SelectedDatabaseName
         {
             get
@@ -25,6 +25,12 @@ namespace DatabaseVersioningTool.WPF
         public MainWindow()
         {
             InitializeComponent();
+            App.DatabaseManager.OnLogUpdated += DatabaseManager_OnLogUpdated;   
+        }
+
+        private void DatabaseManager_OnLogUpdated(object sender, LogUpdatedEventArgs e)
+        {
+            txtLog.Text = txtLog.Text += e.Message + "\n";
         }
 
         protected override void OnActivated(EventArgs e)
@@ -88,6 +94,7 @@ namespace DatabaseVersioningTool.WPF
                 }
             }
         }
+
 
         private void btnRestore_Click(object sender, RoutedEventArgs e)
         {
@@ -173,6 +180,7 @@ namespace DatabaseVersioningTool.WPF
 
         private void btnUpgrade_Click(object sender, RoutedEventArgs e)
         {
+            SetStateAsBusy();
             if(cboVersion.SelectedValue == null)
             {
                 System.Windows.MessageBox.Show("No version selected");
@@ -192,23 +200,12 @@ namespace DatabaseVersioningTool.WPF
             {
                 System.Windows.MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            SetStateAsFree();
         }
 
         private void cboDatabase_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetStateAsBusy();
-
-            bool enable = true;
-
-            btnBackup.IsEnabled = enable;
-            btnRestore.IsEnabled = enable;
-            btnCreateScripts.IsEnabled = enable;
-
-            cboVersion.IsEnabled = enable;
-
-            txtScript.IsEnabled = enable;
-            btnCreateUpdate.IsEnabled = enable;
-            btnCompare.IsEnabled = enable;
 
             string selectedDatabase = (string)((ContentControl)((System.Windows.Controls.ComboBox)(sender)).SelectedValue).Content;
             App.DatabaseName = selectedDatabase;
@@ -232,7 +229,9 @@ namespace DatabaseVersioningTool.WPF
 
         private void btnCreateScripts_Click(object sender, RoutedEventArgs e)
         {
+            SetStateAsBusy();
             App.DatabaseManager.GenerateCreateScripts(App.DatabaseConnection);
+            SetStateAsFree();
         }
 
         private void btnCompare_Click(object sender, RoutedEventArgs e)
@@ -263,6 +262,8 @@ namespace DatabaseVersioningTool.WPF
             this.Opacity = 1;
             this.Cursor = System.Windows.Input.Cursors.Arrow;
             this.IsEnabled = true;
+
+            SetControlState(this.IsEnabled);
         }
 
         private void SetStateAsBusy()
@@ -270,8 +271,24 @@ namespace DatabaseVersioningTool.WPF
             this.IsEnabled = false;
             this.Cursor = System.Windows.Input.Cursors.Wait;
             this.Opacity = .5;
+
+            SetControlState(this.IsEnabled);
+        }
+
+        private void SetControlState(bool enable)
+        {
+            btnBackup.IsEnabled = enable;
+            btnRestore.IsEnabled = enable;
+            btnCreateScripts.IsEnabled = enable;
+            btnCompare.IsEnabled = enable;
+
+            cboVersion.IsEnabled = enable;
+
+            txtScript.IsEnabled = enable;
+            btnCreateUpdate.IsEnabled = enable;
         }
 
         #endregion
+
     }
 }

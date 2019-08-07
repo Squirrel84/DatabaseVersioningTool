@@ -2,6 +2,8 @@
 using DatabaseVersioningTool.Application.Models.Interfaces;
 using DatabaseVersioningTool.Application.Models;
 using DatabaseVersioningTool.DataAccess;
+using NLog;
+using System;
 
 namespace DatabaseVersioningTool.Application.Interfaces
 {
@@ -18,9 +20,13 @@ namespace DatabaseVersioningTool.Application.Interfaces
     }
     public interface IDatabaseManager<T> : IDatabaseManager where T : IDatabaseUpdate
     {
+        ILogger Logger { get; set; }
+
         void CreateInitialVersion(DatabaseConnection databaseConnection, T databaseUpdate);
         void CreateDatabaseUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
         void ValidateUpdate(DatabaseConnection databaseConnection, T databaseUpdate);
+
+        event EventHandler<LogUpdatedEventArgs> OnLogUpdated;
         IEnumerable<IDatabaseDifference> CompareDatabase(DatabaseConnection databaseConnection);
     }
 

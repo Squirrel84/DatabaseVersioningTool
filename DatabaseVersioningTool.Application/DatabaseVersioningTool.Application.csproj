@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NLog" Version="4.6.6" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DatabaseVersioningTool.DataAccess\DatabaseVersioningTool.DataAccess.csproj" />
   </ItemGroup>
 
