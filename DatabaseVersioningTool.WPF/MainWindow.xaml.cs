@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -11,6 +12,8 @@ namespace DatabaseVersioningTool.WPF
 {
     public partial class MainWindow : Window
     {
+        private static bool isSetup = false;
+
         string SelectedDatabaseName
         {
             get
@@ -22,20 +25,42 @@ namespace DatabaseVersioningTool.WPF
         public MainWindow()
         {
             InitializeComponent();
-
-            this.Setup();
         }
 
-        private void Setup()
+        protected override void OnActivated(EventArgs e)
         {
-            EnsurePrerequisites();
+            base.OnActivated(e);
+
+            if (isSetup == false)
+            {
+                var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+                folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
+                folderBrowserDialog.SelectedPath = ConfigurationManager.AppSettings["DefaultScriptPath"];
+
+                System.Windows.Forms.DialogResult result = folderBrowserDialog.ShowDialog(this.GetIWin32Window());
+
+                if (result == System.Windows.Forms.DialogResult.OK || result == System.Windows.Forms.DialogResult.Yes)
+                {
+                    Setup(folderBrowserDialog.SelectedPath);
+                }
+
+                isSetup = true;
+
+                this.BringIntoView();
+                this.Focus();
+            }
+        }
+
+        private void Setup(string scriptPath)
+        {
+            EnsurePrerequisites(scriptPath);
 
             PopulateDatabaseComboSelector();
         }
 
-        private void EnsurePrerequisites()
+        private void EnsurePrerequisites(string scriptPath)
         {
-            FileManager.Manager.Initialise();
+            FileManager.Manager.Initialise(scriptPath);
             App.DatabaseManager.VersionTracker.Load();
         }
 
@@ -68,14 +93,14 @@ namespace DatabaseVersioningTool.WPF
         {
             SetStateAsBusy();
 
-            var dlg = new System.Windows.Forms.OpenFileDialog();
-            System.Windows.Forms.DialogResult result = dlg.ShowDialog(this.GetIWin32Window());
+            var fileDialog = new System.Windows.Forms.OpenFileDialog();
+            System.Windows.Forms.DialogResult result = fileDialog.ShowDialog(this.GetIWin32Window());
 
             if (result == System.Windows.Forms.DialogResult.OK || result == System.Windows.Forms.DialogResult.Yes)
             {
                 try
                 {
-                    App.DatabaseManager.RestoreDatabase(App.DatabaseConnection, SelectedDatabaseName, dlg.FileName);
+                    App.DatabaseManager.RestoreDatabase(App.DatabaseConnection, SelectedDatabaseName, fileDialog.FileName);
                     System.Windows.Forms.MessageBox.Show($"{SelectedDatabaseName} successfully restored");
                 }
                 catch
