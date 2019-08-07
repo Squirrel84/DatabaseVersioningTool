@@ -3,6 +3,7 @@
 using DatabaseVersioningTool.DataAccess;
 using DatabaseVersioningTool.Application.Interfaces;
 using DatabaseVersioningTool.DataAccess.Sql;
+using NLog;
 
 namespace DatabaseVersioningTool.WPF
 {
@@ -16,6 +17,13 @@ namespace DatabaseVersioningTool.WPF
         private static object padlock = new object();
 
         private static IDatabaseManager<SqlDatabaseUpdate> databaseManager = null;
+
+        private static ILogger logger = null;
+
+        public App()
+        {
+            logger = LogManager.GetLogger("DatabaseMaintainer");
+        }
 
         public static DatabaseConnection DatabaseConnection
         {
@@ -36,6 +44,7 @@ namespace DatabaseVersioningTool.WPF
                         if (databaseManager == null)
                         {
                             databaseManager = new SqlDatabaseManager();
+                            databaseManager.Logger = logger;
                         }
                     }
                 }

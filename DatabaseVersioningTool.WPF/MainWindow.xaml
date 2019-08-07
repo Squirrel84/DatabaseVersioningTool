@@ -9,7 +9,7 @@
         ResizeMode="NoResize" 
         WindowStartupLocation="CenterScreen" 
         WindowStyle="SingleBorderWindow" 
-        Background="Silver">
+        Background="Silver" d:DesignWidth="880">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25" />
@@ -37,6 +37,7 @@
         <Button Grid.Row="2" Grid.Column="2" Name="btnUpgrade" Content="Upgrade" Click="btnUpgrade_Click" IsEnabled="False" />
 
         <TextBox Grid.Row="3" Grid.Column="1" Name="txtScript" AcceptsReturn="True" AcceptsTab="True" AutoWordSelection="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" />
+        <TextBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Name="txtLog" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Background="Silver" IsEnabled="False" />
         <Button Grid.Row="4" Grid.Column="3" Name="btnCreateUpdate" Content="Create Update" Click="btnCreateUpdate_Click" IsEnabled="False" />
     </Grid>
 </Window>
